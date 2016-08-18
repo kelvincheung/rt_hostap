@@ -30,12 +30,12 @@ BINALL += wpa_passphrase
 endif
 
 ALL = $(BINALL)
-ALL += systemd/wpa_supplicant.service
-ALL += systemd/wpa_supplicant@.service
-ALL += systemd/wpa_supplicant-nl80211@.service
-ALL += systemd/wpa_supplicant-wired@.service
-ALL += dbus/fi.epitest.hostap.WPASupplicant.service
-ALL += dbus/fi.w1.wpa_supplicant1.service
+#ALL += systemd/wpa_supplicant.service
+#ALL += systemd/wpa_supplicant@.service
+#ALL += systemd/wpa_supplicant-nl80211@.service
+#ALL += systemd/wpa_supplicant-wired@.service
+#ALL += dbus/fi.epitest.hostap.WPASupplicant.service
+#ALL += dbus/fi.w1.wpa_supplicant1.service
 ifdef CONFIG_BUILD_WPA_CLIENT_SO
 ALL += libwpa_client.so
 endif
@@ -76,7 +76,7 @@ CONFIG_OPENSSL_CMAC=y
 endif
 
 OBJS = config.o
-OBJS += notify.o
+OBJS += notify_none.o
 OBJS += bss.o
 OBJS += eap_register.o
 OBJS += ../src/utils/common.o
@@ -1821,7 +1821,6 @@ lcov-html: wpa_supplicant.gcda
 
 clean:
 	$(MAKE) -C ../src clean
-	$(MAKE) -C dbus clean
 	rm -f core *~ *.o *.d *.gcno *.gcda *.gcov
 	rm -f eap_*.so $(ALL) $(WINALL) eapol_test preauth_test
 	rm -f wpa_priv

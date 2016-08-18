@@ -49,6 +49,7 @@ void pmksa_candidate_free(struct wpa_sm *sm)
 }
 
 
+#ifdef CONFIG_L2_PACKET
 static void rsn_preauth_receive(void *ctx, const u8 *src_addr,
 				const u8 *buf, size_t len)
 {
@@ -68,6 +69,7 @@ static void rsn_preauth_receive(void *ctx, const u8 *src_addr,
 
 	eapol_sm_rx_eapol(sm->preauth_eapol, src_addr, buf, len);
 }
+#endif /* CONFIG_L2_PACKET */
 
 
 static void rsn_preauth_eapol_cb(struct eapol_sm *eapol,
@@ -138,16 +140,20 @@ static int rsn_preauth_eapol_send(void *ctx, int type, const u8 *buf,
 	/* TODO: could add l2_packet_sendmsg that allows fragments to avoid
 	 * extra copy here */
 
+#ifdef CONFIG_L2_PACKET
 	if (sm->l2_preauth == NULL)
 		return -1;
+#endif /* CONFIG_L2_PACKET */
 
 	msg = wpa_sm_alloc_eapol(sm, type, buf, len, &msglen, NULL);
 	if (msg == NULL)
 		return -1;
 
 	wpa_hexdump(MSG_MSGDUMP, "TX EAPOL (preauth)", msg, msglen);
+#ifdef CONFIG_L2_PACKET
 	res = l2_packet_send(sm->l2_preauth, sm->preauth_bssid,
 			     ETH_P_RSN_PREAUTH, msg, msglen);
+#endif /* CONFIG_L2_PACKET */
 	os_free(msg);
 	return res;
 }
@@ -180,6 +186,7 @@ int rsn_preauth_init(struct wpa_sm *sm, const u8 *dst,
 	wpa_msg(sm->ctx->msg_ctx, MSG_DEBUG,
 		"RSN: starting pre-authentication with " MACSTR, MAC2STR(dst));
 
+#ifdef CONFIG_L2_PACKET
 	sm->l2_preauth = l2_packet_init(sm->ifname, sm->own_addr,
 					ETH_P_RSN_PREAUTH,
 					rsn_preauth_receive, sm, 0);
@@ -202,6 +209,7 @@ int rsn_preauth_init(struct wpa_sm *sm, const u8 *dst,
 			goto fail;
 		}
 	}
+#endif /* CONFIG_L2_PACKET */
 
 	ctx = os_zalloc(sizeof(*ctx));
 	if (ctx == NULL) {
@@ -253,12 +261,14 @@ int rsn_preauth_init(struct wpa_sm *sm, const u8 *dst,
 	return 0;
 
 fail:
+#ifdef CONFIG_L2_PACKET
 	if (sm->l2_preauth_br) {
 		l2_packet_deinit(sm->l2_preauth_br);
 		sm->l2_preauth_br = NULL;
 	}
 	l2_packet_deinit(sm->l2_preauth);
 	sm->l2_preauth = NULL;
+#endif /* CONFIG_L2_PACKET */
 	return ret;
 }
 
@@ -280,12 +290,14 @@ void rsn_preauth_deinit(struct wpa_sm *sm)
 	sm->preauth_eapol = NULL;
 	os_memset(sm->preauth_bssid, 0, ETH_ALEN);
 
+#ifdef CONFIG_L2_PACKET
 	l2_packet_deinit(sm->l2_preauth);
 	sm->l2_preauth = NULL;
 	if (sm->l2_preauth_br) {
 		l2_packet_deinit(sm->l2_preauth_br);
 		sm->l2_preauth_br = NULL;
 	}
+#endif /* CONFIG_L2_PACKET */
 }
 
 

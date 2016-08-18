@@ -438,7 +438,7 @@ static int hostapd_wpa_auth_send_ether(void *ctx, const u8 *dst, u16 proto,
 {
 	struct hostapd_data *hapd = ctx;
 	struct l2_ethhdr *buf;
-	int ret;
+	int ret = 0;
 
 #ifdef CONFIG_TESTING_OPTIONS
 	if (hapd->ext_eapol_frame_io && proto == ETH_P_EAPOL) {
@@ -476,8 +476,10 @@ static int hostapd_wpa_auth_send_ether(void *ctx, const u8 *dst, u16 proto,
 		return hapd->driver->send_ether(hapd->drv_priv, dst,
 						hapd->own_addr, proto,
 						data, data_len);
+#ifdef CONFIG_L2_PACKET
 	if (hapd->l2 == NULL)
 		return -1;
+#endif /* CONFIG_L2_PACKET */
 
 	buf = os_malloc(sizeof(*buf) + data_len);
 	if (buf == NULL)
@@ -486,8 +488,10 @@ static int hostapd_wpa_auth_send_ether(void *ctx, const u8 *dst, u16 proto,
 	os_memcpy(buf->h_source, hapd->own_addr, ETH_ALEN);
 	buf->h_proto = host_to_be16(proto);
 	os_memcpy(buf + 1, data, data_len);
+#ifdef CONFIG_L2_PACKET
 	ret = l2_packet_send(hapd->l2, dst, proto, (u8 *) buf,
 			     sizeof(*buf) + data_len);
+#endif /* CONFIG_L2_PACKET */
 	os_free(buf);
 	return ret;
 }

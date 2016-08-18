@@ -2138,8 +2138,10 @@ static void wpa_supplicant_event_assoc(struct wpa_supplicant *wpa_s,
 		wpa_supplicant_scard_init(wpa_s, wpa_s->current_ssid);
 	}
 	wpa_sm_notify_assoc(wpa_s->wpa, bssid);
+#ifdef CONFIG_L2_PACKET
 	if (wpa_s->l2)
 		l2_packet_notify_auth_start(wpa_s->l2);
+#endif /* CONFIG_L2_PACKET */
 
 	/*
 	 * Set portEnabled first to FALSE in order to get EAP state machine out
@@ -2605,8 +2607,10 @@ wpa_supplicant_event_interface_status(struct wpa_supplicant *wpa_s,
 		wpa_s->interface_removed = 1;
 		wpa_supplicant_mark_disassoc(wpa_s);
 		wpa_supplicant_set_state(wpa_s, WPA_INTERFACE_DISABLED);
+#ifdef CONFIG_L2_PACKET
 		l2_packet_deinit(wpa_s->l2);
 		wpa_s->l2 = NULL;
+#endif /* CONFIG_L2_PACKET */
 
 #ifdef CONFIG_P2P
 		if (wpa_s->global->p2p &&

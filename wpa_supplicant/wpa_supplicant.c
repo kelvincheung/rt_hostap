@@ -407,12 +407,14 @@ static void wpa_supplicant_cleanup(struct wpa_supplicant *wpa_s)
 	wpa_s->scard = NULL;
 	wpa_sm_set_scard_ctx(wpa_s->wpa, NULL);
 	eapol_sm_register_scard_ctx(wpa_s->eapol, NULL);
+#ifdef CONFIG_L2_PACKET
 	l2_packet_deinit(wpa_s->l2);
 	wpa_s->l2 = NULL;
 	if (wpa_s->l2_br) {
 		l2_packet_deinit(wpa_s->l2_br);
 		wpa_s->l2_br = NULL;
 	}
+#endif /* CONFIG_L2_PACKET */
 #ifdef CONFIG_TESTING_OPTIONS
 	l2_packet_deinit(wpa_s->l2_test);
 	wpa_s->l2_test = NULL;
@@ -3219,6 +3221,7 @@ int wpa_supplicant_update_mac_addr(struct wpa_supplicant *wpa_s)
 	if ((!wpa_s->p2p_mgmt ||
 	     !(wpa_s->drv_flags & WPA_DRIVER_FLAGS_DEDICATED_P2P_DEVICE)) &&
 	    !(wpa_s->drv_flags & WPA_DRIVER_FLAGS_P2P_DEDICATED_INTERFACE)) {
+#ifdef CONFIG_L2_PACKET
 		l2_packet_deinit(wpa_s->l2);
 		wpa_s->l2 = l2_packet_init(wpa_s->ifname,
 					   wpa_drv_get_mac_addr(wpa_s),
@@ -3226,16 +3229,19 @@ int wpa_supplicant_update_mac_addr(struct wpa_supplicant *wpa_s)
 					   wpa_supplicant_rx_eapol, wpa_s, 0);
 		if (wpa_s->l2 == NULL)
 			return -1;
+#endif /* CONFIG_L2_PACKET */
 	} else {
 		const u8 *addr = wpa_drv_get_mac_addr(wpa_s);
 		if (addr)
 			os_memcpy(wpa_s->own_addr, addr, ETH_ALEN);
 	}
 
+#ifdef CONFIG_L2_PACKET
 	if (wpa_s->l2 && l2_packet_get_own_addr(wpa_s->l2, wpa_s->own_addr)) {
 		wpa_msg(wpa_s, MSG_ERROR, "Failed to get own L2 address");
 		return -1;
 	}
+#endif /* CONFIG_L2_PACKET */
 
 	wpa_sm_set_own_addr(wpa_s->wpa, wpa_s->own_addr);
 
@@ -3243,6 +3249,7 @@ int wpa_supplicant_update_mac_addr(struct wpa_supplicant *wpa_s)
 }
 
 
+#ifdef CONFIG_L2_PACKET
 static void wpa_supplicant_rx_eapol_bridge(void *ctx, const u8 *src_addr,
 					   const u8 *buf, size_t len)
 {
@@ -3266,6 +3273,7 @@ static void wpa_supplicant_rx_eapol_bridge(void *ctx, const u8 *src_addr,
 	wpa_supplicant_rx_eapol(wpa_s, src_addr, buf + sizeof(*eth),
 				len - sizeof(*eth));
 }
+#endif /* CONFIG_L2_PACKET */
 
 
 /**
@@ -3292,6 +3300,7 @@ int wpa_supplicant_driver_init(struct wpa_supplicant *wpa_s)
 	if (wpa_s->bridge_ifname[0]) {
 		wpa_dbg(wpa_s, MSG_DEBUG, "Receiving packets from bridge "
 			"interface '%s'", wpa_s->bridge_ifname);
+#ifdef CONFIG_L2_PACKET
 		wpa_s->l2_br = l2_packet_init_bridge(
 			wpa_s->bridge_ifname, wpa_s->ifname, wpa_s->own_addr,
 			ETH_P_EAPOL, wpa_supplicant_rx_eapol_bridge, wpa_s, 1);
@@ -3301,6 +3310,7 @@ int wpa_supplicant_driver_init(struct wpa_supplicant *wpa_s)
 				wpa_s->bridge_ifname);
 			return -1;
 		}
+#endif /* CONFIG_L2_PACKET */
 	}
 
 	if (wpa_s->conf->ap_scan == 2 &&

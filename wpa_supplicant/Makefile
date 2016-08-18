@@ -351,10 +351,12 @@ LDFLAGS += $(DRV_WPA_LDFLAGS)
 LIBS += $(DRV_WPA_LIBS)
 endif
 
-ifndef CONFIG_L2_PACKET
-CONFIG_L2_PACKET=linux
-endif
+#ifndef CONFIG_L2_PACKET
+#CONFIG_L2_PACKET=linux
+#endif
 
+ifdef CONFIG_L2_PACKET
+CFLAGS += -DCONFIG_L2_PACKET
 OBJS_l2 += ../src/l2_packet/l2_packet_$(CONFIG_L2_PACKET).o
 
 ifeq ($(CONFIG_L2_PACKET), pcap)
@@ -374,6 +376,7 @@ endif
 
 ifeq ($(CONFIG_L2_PACKET), freebsd)
 LIBS += -lpcap
+endif
 endif
 
 ifdef CONFIG_ERP

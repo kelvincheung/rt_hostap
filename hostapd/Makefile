@@ -45,7 +45,7 @@ LIBS += -lws2_32
 endif
 
 OBJS += main.o
-OBJS += config_file.o
+OBJS += config_none.o
 
 OBJS += ../src/ap/hostapd.o
 OBJS += ../src/ap/wpa_auth_glue.o

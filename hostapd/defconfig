@@ -9,7 +9,7 @@
 # be modified from here. In most cass, these lines should use += in order not
 # to override previous values of the variables.
 
-CONFIG_OS=none
+CONFIG_OS=rtos
 CONFIG_NO_CTRL_IFACE=y
 # Driver interface for Host AP driver
 #CONFIG_DRIVER_HOSTAP=y
@@ -240,7 +240,7 @@ CONFIG_NO_DUMP_STATE=y
 # This will save some in binary size and CPU use. However, this should only be
 # considered for builds that are known to be used on devices that meet the
 # requirements described above.
-#CONFIG_NO_RANDOM_POOL=y
+CONFIG_NO_RANDOM_POOL=y
 
 # Should we use poll instead of select? Select is used by default.
 #CONFIG_ELOOP_POLL=y

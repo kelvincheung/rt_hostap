@@ -562,9 +562,6 @@ int main(int argc, char *argv[])
 	int enable_trace_dbg = 0;
 #endif /* CONFIG_DEBUG_LINUX_TRACING */
 
-	if (os_program_init())
-		return -1;
-
 	os_memset(&interfaces, 0, sizeof(interfaces));
 	interfaces.reload_config = hostapd_reload_config;
 	interfaces.config_read_cb = hostapd_config_read;
@@ -781,8 +778,6 @@ int main(int argc, char *argv[])
 	os_free(bss_config);
 
 	fst_global_deinit();
-
-	os_program_deinit();
 
 	return ret;
 }

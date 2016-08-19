@@ -4214,7 +4214,7 @@ static int wpa_supplicant_init_iface(struct wpa_supplicant *wpa_s,
 				   "configuration '%s'.", wpa_s->confname);
 			return -1;
 		}
-		wpa_s->confanother = os_rel2abs_path(iface->confanother);
+		/*wpa_s->confanother = os_rel2abs_path(iface->confanother);*/
 		wpa_config_read(wpa_s->confanother, wpa_s->conf);
 
 		/*

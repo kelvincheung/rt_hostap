@@ -4645,6 +4645,9 @@ union wpa_event_data {
 void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
 			  union wpa_event_data *data);
 
+void hostapd_event(void *ctx, enum wpa_event_type event,
+		   union wpa_event_data *data);
+
 
 /*
  * The following inline functions are provided for convenience to simplify
@@ -4660,7 +4663,7 @@ static inline void drv_event_assoc(void *ctx, const u8 *addr, const u8 *ie,
 	event.assoc_info.req_ies = ie;
 	event.assoc_info.req_ies_len = ielen;
 	event.assoc_info.addr = addr;
-	wpa_supplicant_event(ctx, EVENT_ASSOC, &event);
+	hostapd_event(ctx, EVENT_ASSOC, &event);
 }
 
 static inline void drv_event_disassoc(void *ctx, const u8 *addr)
@@ -4668,7 +4671,7 @@ static inline void drv_event_disassoc(void *ctx, const u8 *addr)
 	union wpa_event_data event;
 	os_memset(&event, 0, sizeof(event));
 	event.disassoc_info.addr = addr;
-	wpa_supplicant_event(ctx, EVENT_DISASSOC, &event);
+	hostapd_event(ctx, EVENT_DISASSOC, &event);
 }
 
 static inline void drv_event_eapol_rx(void *ctx, const u8 *src, const u8 *data,
@@ -4679,7 +4682,7 @@ static inline void drv_event_eapol_rx(void *ctx, const u8 *src, const u8 *data,
 	event.eapol_rx.src = src;
 	event.eapol_rx.data = data;
 	event.eapol_rx.data_len = data_len;
-	wpa_supplicant_event(ctx, EVENT_EAPOL_RX, &event);
+	hostapd_event(ctx, EVENT_EAPOL_RX, &event);
 }
 
 /* driver_common.c */

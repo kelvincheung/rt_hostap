@@ -938,7 +938,8 @@ OBJS += ../src/fst/fst_ctrl_iface.o
 endif
 endif
 
-ALL=hostapd hostapd_cli
+#ALL=hostapd hostapd_cli
+ALL=hostapd
 
 all: verify_config $(ALL)
 

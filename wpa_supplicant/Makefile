@@ -23,11 +23,12 @@ CONFIG_WPS_TESTING=y
 CONFIG_TDLS_TESTING=y
 endif
 
-BINALL=wpa_supplicant wpa_cli
+#BINALL=wpa_supplicant wpa_cli
+BINALL=wpa_supplicant
 
-ifndef CONFIG_NO_WPA_PASSPHRASE
-BINALL += wpa_passphrase
-endif
+#ifndef CONFIG_NO_WPA_PASSPHRASE
+#BINALL += wpa_passphrase
+#endif
 
 ALL = $(BINALL)
 #ALL += systemd/wpa_supplicant.service

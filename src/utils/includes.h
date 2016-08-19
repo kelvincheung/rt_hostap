@@ -32,7 +32,6 @@
 #include <unistd.h>
 #endif /* _MSC_VER */
 
-#ifndef CONFIG_NATIVE_WINDOWS
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -40,6 +39,5 @@
 #include <sys/uio.h>
 #include <sys/time.h>
 #endif /* __vxworks */
-#endif /* CONFIG_NATIVE_WINDOWS */
 
 #endif /* INCLUDES_H */

@@ -304,7 +304,6 @@ int radius_client_register(struct radius_client_data *radius,
 static int radius_client_handle_send_error(struct radius_client_data *radius,
 					   int s, RadiusType msg_type)
 {
-#ifndef CONFIG_NATIVE_WINDOWS
 	int _errno = errno;
 	wpa_printf(MSG_INFO, "send[RADIUS,s=%d]: %s", s, strerror(errno));
 	if (_errno == ENOTCONN || _errno == EDESTADDRREQ || _errno == EINVAL ||
@@ -322,7 +321,6 @@ static int radius_client_handle_send_error(struct radius_client_data *radius,
 			return 1;
 		}
 	}
-#endif /* CONFIG_NATIVE_WINDOWS */
 
 	return 0;
 }
@@ -1130,7 +1128,6 @@ radius_change_server(struct radius_client_data *radius,
 		return -1;
 	}
 
-#ifndef CONFIG_NATIVE_WINDOWS
 	switch (nserv->addr.af) {
 	case AF_INET:
 		claddrlen = sizeof(claddr);
@@ -1155,7 +1152,6 @@ radius_change_server(struct radius_client_data *radius,
 	}
 #endif /* CONFIG_IPV6 */
 	}
-#endif /* CONFIG_NATIVE_WINDOWS */
 
 	if (auth)
 		radius->auth_sock = sel_sock;

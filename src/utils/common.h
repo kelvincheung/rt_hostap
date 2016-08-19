@@ -53,17 +53,6 @@ static inline unsigned int bswap_32(unsigned int v)
 }
 #endif /* __APPLE__ */
 
-#ifdef CONFIG_NATIVE_WINDOWS
-#include <winsock.h>
-
-typedef int socklen_t;
-
-#ifndef MSG_DONTWAIT
-#define MSG_DONTWAIT 0 /* not supported */
-#endif
-
-#endif /* CONFIG_NATIVE_WINDOWS */
-
 #ifdef _MSC_VER
 #define inline __inline
 
@@ -119,33 +108,6 @@ typedef int8_t s8;
 
 
 /* Define platform specific byte swapping macros */
-
-#if defined(__CYGWIN__) || defined(CONFIG_NATIVE_WINDOWS)
-
-static inline unsigned short wpa_swap_16(unsigned short v)
-{
-	return ((v & 0xff) << 8) | (v >> 8);
-}
-
-static inline unsigned int wpa_swap_32(unsigned int v)
-{
-	return ((v & 0xff) << 24) | ((v & 0xff00) << 8) |
-		((v & 0xff0000) >> 8) | (v >> 24);
-}
-
-#define le_to_host16(n) (n)
-#define host_to_le16(n) (n)
-#define be_to_host16(n) wpa_swap_16(n)
-#define host_to_be16(n) wpa_swap_16(n)
-#define le_to_host32(n) (n)
-#define host_to_le32(n) (n)
-#define be_to_host32(n) wpa_swap_32(n)
-#define host_to_be32(n) wpa_swap_32(n)
-
-#define WPA_BYTE_SWAP_DEFINED
-
-#endif /* __CYGWIN__ || CONFIG_NATIVE_WINDOWS */
-
 
 #ifndef WPA_BYTE_SWAP_DEFINED
 
@@ -462,13 +424,8 @@ int wpa_snprintf_hex_uppercase(char *buf, size_t buf_size, const u8 *data,
 
 int hwaddr_mask_txt(char *buf, size_t len, const u8 *addr, const u8 *mask);
 
-#ifdef CONFIG_NATIVE_WINDOWS
-void wpa_unicode2ascii_inplace(TCHAR *str);
-TCHAR * wpa_strdup_tchar(const char *str);
-#else /* CONFIG_NATIVE_WINDOWS */
 #define wpa_unicode2ascii_inplace(s) do { } while (0)
 #define wpa_strdup_tchar(s) strdup((s))
-#endif /* CONFIG_NATIVE_WINDOWS */
 
 void printf_encode(char *txt, size_t maxlen, const u8 *data, size_t len);
 size_t printf_decode(u8 *buf, size_t maxlen, const char *str);

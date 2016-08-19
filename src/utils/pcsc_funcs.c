@@ -506,11 +506,7 @@ struct scard_data * scard_init(const char *reader)
 	long ret;
 	unsigned long len, pos;
 	struct scard_data *scard;
-#ifdef CONFIG_NATIVE_WINDOWS
-	TCHAR *readers = NULL;
-#else /* CONFIG_NATIVE_WINDOWS */
 	char *readers = NULL;
-#endif /* CONFIG_NATIVE_WINDOWS */
 	unsigned char buf[100];
 	size_t blen;
 	int transaction = 0;

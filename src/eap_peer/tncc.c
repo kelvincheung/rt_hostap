@@ -7,9 +7,7 @@
  */
 
 #include "includes.h"
-#ifndef CONFIG_NATIVE_WINDOWS
 #include <dlfcn.h>
-#endif /* CONFIG_NATIVE_WINDOWS */
 
 #include "common.h"
 #include "base64.h"
@@ -259,15 +257,7 @@ static void * tncc_get_sym(void *handle, char *func)
 {
 	void *fptr;
 
-#ifdef CONFIG_NATIVE_WINDOWS
-#ifdef _WIN32_WCE
-	fptr = GetProcAddressA(handle, func);
-#else /* _WIN32_WCE */
-	fptr = GetProcAddress(handle, func);
-#endif /* _WIN32_WCE */
-#else /* CONFIG_NATIVE_WINDOWS */
 	fptr = dlsym(handle, func);
-#endif /* CONFIG_NATIVE_WINDOWS */
 
 	return fptr;
 }
@@ -400,31 +390,12 @@ static int tncc_load_imc(struct tnc_if_imc *imc)
 
 	wpa_printf(MSG_DEBUG, "TNC: Opening IMC: %s (%s)",
 		   imc->name, imc->path);
-#ifdef CONFIG_NATIVE_WINDOWS
-#ifdef UNICODE
-	{
-		TCHAR *lib = wpa_strdup_tchar(imc->path);
-		if (lib == NULL)
-			return -1;
-		imc->dlhandle = LoadLibrary(lib);
-		os_free(lib);
-	}
-#else /* UNICODE */
-	imc->dlhandle = LoadLibrary(imc->path);
-#endif /* UNICODE */
-	if (imc->dlhandle == NULL) {
-		wpa_printf(MSG_ERROR, "TNC: Failed to open IMC '%s' (%s): %d",
-			   imc->name, imc->path, (int) GetLastError());
-		return -1;
-	}
-#else /* CONFIG_NATIVE_WINDOWS */
 	imc->dlhandle = dlopen(imc->path, RTLD_LAZY);
 	if (imc->dlhandle == NULL) {
 		wpa_printf(MSG_ERROR, "TNC: Failed to open IMC '%s' (%s): %s",
 			   imc->name, imc->path, dlerror());
 		return -1;
 	}
-#endif /* CONFIG_NATIVE_WINDOWS */
 
 	if (tncc_imc_resolve_funcs(imc) < 0) {
 		wpa_printf(MSG_ERROR, "TNC: Failed to resolve IMC functions");
@@ -447,11 +418,7 @@ static void tncc_unload_imc(struct tnc_if_imc *imc)
 	tnc_imc[imc->imcID] = NULL;
 
 	if (imc->dlhandle) {
-#ifdef CONFIG_NATIVE_WINDOWS
-		FreeLibrary(imc->dlhandle);
-#else /* CONFIG_NATIVE_WINDOWS */
 		dlclose(imc->dlhandle);
-#endif /* CONFIG_NATIVE_WINDOWS */
 	}
 	os_free(imc->name);
 	os_free(imc->path);
@@ -876,131 +843,6 @@ enum tncc_process_res tncc_process_if_tnccs(struct tncc_data *tncc,
 }
 
 
-#ifdef CONFIG_NATIVE_WINDOWS
-static int tncc_read_config_reg(struct tncc_data *tncc, HKEY hive)
-{
-	HKEY hk, hk2;
-	LONG ret;
-	DWORD i;
-	struct tnc_if_imc *imc, *last;
-	int j;
-
-	last = tncc->imc;
-	while (last && last->next)
-		last = last->next;
-
-	ret = RegOpenKeyEx(hive, TNC_WINREG_PATH, 0, KEY_ENUMERATE_SUB_KEYS,
-			   &hk);
-	if (ret != ERROR_SUCCESS)
-		return 0;
-
-	for (i = 0; ; i++) {
-		TCHAR name[255], *val;
-		DWORD namelen, buflen;
-
-		namelen = 255;
-		ret = RegEnumKeyEx(hk, i, name, &namelen, NULL, NULL, NULL,
-				   NULL);
-
-		if (ret == ERROR_NO_MORE_ITEMS)
-			break;
-
-		if (ret != ERROR_SUCCESS) {
-			wpa_printf(MSG_DEBUG, "TNC: RegEnumKeyEx failed: 0x%x",
-				   (unsigned int) ret);
-			break;
-		}
-
-		if (namelen >= 255)
-			namelen = 255 - 1;
-		name[namelen] = '\0';
-
-		wpa_printf(MSG_DEBUG, "TNC: IMC '" TSTR "'", name);
-
-		ret = RegOpenKeyEx(hk, name, 0, KEY_QUERY_VALUE, &hk2);
-		if (ret != ERROR_SUCCESS) {
-			wpa_printf(MSG_DEBUG, "Could not open IMC key '" TSTR
-				   "'", name);
-			continue;
-		}
-
-		ret = RegQueryValueEx(hk2, TEXT("Path"), NULL, NULL, NULL,
-				      &buflen);
-		if (ret != ERROR_SUCCESS) {
-			wpa_printf(MSG_DEBUG, "TNC: Could not read Path from "
-				   "IMC key '" TSTR "'", name);
-			RegCloseKey(hk2);
-			continue;
-		}
-
-		val = os_malloc(buflen);
-		if (val == NULL) {
-			RegCloseKey(hk2);
-			continue;
-		}
-
-		ret = RegQueryValueEx(hk2, TEXT("Path"), NULL, NULL,
-				      (LPBYTE) val, &buflen);
-		if (ret != ERROR_SUCCESS) {
-			os_free(val);
-			RegCloseKey(hk2);
-			continue;
-		}
-
-		RegCloseKey(hk2);
-
-		wpa_unicode2ascii_inplace(val);
-		wpa_printf(MSG_DEBUG, "TNC: IMC Path '%s'", (char *) val);
-
-		for (j = 0; j < TNC_MAX_IMC_ID; j++) {
-			if (tnc_imc[j] == NULL)
-				break;
-		}
-		if (j >= TNC_MAX_IMC_ID) {
-			wpa_printf(MSG_DEBUG, "TNC: Too many IMCs");
-			os_free(val);
-			continue;
-		}
-
-		imc = os_zalloc(sizeof(*imc));
-		if (imc == NULL) {
-			os_free(val);
-			break;
-		}
-
-		imc->imcID = j;
-
-		wpa_unicode2ascii_inplace(name);
-		imc->name = os_strdup((char *) name);
-		imc->path = os_strdup((char *) val);
-
-		os_free(val);
-
-		if (last == NULL)
-			tncc->imc = imc;
-		else
-			last->next = imc;
-		last = imc;
-
-		tnc_imc[imc->imcID] = imc;
-	}
-
-	RegCloseKey(hk);
-
-	return 0;
-}
-
-
-static int tncc_read_config(struct tncc_data *tncc)
-{
-	if (tncc_read_config_reg(tncc, HKEY_LOCAL_MACHINE) < 0 ||
-	    tncc_read_config_reg(tncc, HKEY_CURRENT_USER) < 0)
-		return -1;
-	return 0;
-}
-
-#else /* CONFIG_NATIVE_WINDOWS */
-
 static struct tnc_if_imc * tncc_parse_imc(char *start, char *end, int *error)
 {
 	struct tnc_if_imc *imc;
@@ -1110,8 +952,6 @@ static int tncc_read_config(struct tncc_data *tncc)
 
 	return 0;
 }
-
-#endif /* CONFIG_NATIVE_WINDOWS */
 
 
 struct tncc_data * tncc_init(void)

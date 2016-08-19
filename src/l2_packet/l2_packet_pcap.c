@@ -7,9 +7,7 @@
  */
 
 #include "includes.h"
-#ifndef CONFIG_NATIVE_WINDOWS
 #include <sys/ioctl.h>
-#endif /* CONFIG_NATIVE_WINDOWS */
 #include <pcap.h>
 #ifndef CONFIG_WINPCAP
 #include <dnet.h>

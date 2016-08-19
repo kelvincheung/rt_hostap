@@ -8,7 +8,6 @@
 
 #include "utils/includes.h"
 
-#ifndef CONFIG_NATIVE_WINDOWS
 
 #ifdef CONFIG_TESTING_OPTIONS
 #include <net/ethernet.h>
@@ -3213,5 +3212,3 @@ static void hostapd_ctrl_iface_send(struct hostapd_data *hapd, int level,
 		dst = next;
 	}
 }
-
-#endif /* CONFIG_NATIVE_WINDOWS */

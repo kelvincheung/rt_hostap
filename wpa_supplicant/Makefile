@@ -2,20 +2,15 @@ ifndef CC
 CC=gcc
 endif
 
-ifndef CFLAGS
-CFLAGS = -MMD -O2 -Wall -g
-endif
-
 export LIBDIR ?= /usr/local/lib/
 export INCDIR ?= /usr/local/include/
 export BINDIR ?= /usr/local/sbin/
 PKG_CONFIG ?= pkg-config
 
+CFLAGS += -MMD -Os -Wall -g
 CFLAGS += $(EXTRA_CFLAGS)
 CFLAGS += -I$(abspath ../src)
 CFLAGS += -I$(abspath ../src/utils)
-
--include .config
 
 ifdef CONFIG_TESTING_OPTIONS
 CFLAGS += -DCONFIG_TESTING_OPTIONS
@@ -42,7 +37,11 @@ ALL += libwpa_client.so
 endif
 
 
-all: verify_config $(ALL) dynamic_eap_methods
+#all: verify_config $(ALL) dynamic_eap_methods
+all: .config libwifi
+
+.config:
+	cp $(CONFIG_NAME)defconfig .config
 
 verify_config:
 	@if [ ! -r .config ]; then \
@@ -92,12 +91,14 @@ OBJS_c += ../src/utils/wpa_debug.o
 OBJS_c += ../src/utils/common.o
 OBJS += wmm_ac.o
 
-ifndef CONFIG_OS
-ifdef CONFIG_NATIVE_WINDOWS
-CONFIG_OS=win32
-else
-CONFIG_OS=unix
+ifdef CONFIG_OS
+CONFIG_NAME=$(CONFIG_OS)_
 endif
+
+-include .config
+
+ifndef CONFIG_OS
+CONFIG_OS=unix
 endif
 
 ifeq ($(CONFIG_OS), internal)
@@ -108,7 +109,11 @@ ifeq ($(CONFIG_OS), none)
 CFLAGS += -DOS_NO_C_LIB_DEFINES
 endif
 
+ifeq ($(CONFIG_OS), nuttx)
+OBJS += ../src/utils/os_rtos.o
+else
 OBJS += ../src/utils/os_$(CONFIG_OS).o
+endif
 OBJS_p += ../src/utils/os_$(CONFIG_OS).o
 OBJS_c += ../src/utils/os_$(CONFIG_OS).o
 
@@ -144,6 +149,10 @@ LIBS += -lrt
 LIBS_c += -lrt
 LIBS_p += -lrt
 endif
+endif
+
+ifeq ($(CONFIG_OS), nuttx)
+OBJS += ../src/utils/intf_yunos.o
 endif
 
 ifdef CONFIG_ELOOP_POLL
@@ -783,10 +792,8 @@ OBJS += ../src/eap_peer/tncc.o
 OBJS_h += ../src/eap_server/eap_server_tnc.o
 OBJS_h += ../src/eap_server/tncs.o
 NEED_BASE64=y
-ifndef CONFIG_NATIVE_WINDOWS
 ifndef CONFIG_DRIVER_BSD
 LIBS += -ldl
-endif
 endif
 endif
 
@@ -936,13 +943,7 @@ ifdef CONFIG_PCSC
 CFLAGS += -DPCSC_FUNCS -I/usr/include/PCSC
 OBJS += ../src/utils/pcsc_funcs.o
 # -lpthread may not be needed depending on how pcsc-lite was configured
-ifdef CONFIG_NATIVE_WINDOWS
-#Once MinGW gets support for WinScard, -lwinscard could be used instead of the
-#dynamic symbol loading that is now used in pcsc_funcs.c
-#LIBS += -lwinscard
-else
 LIBS += -lpcsclite -lpthread
-endif
 endif
 
 ifdef CONFIG_SIM_SIMULATOR
@@ -1138,10 +1139,8 @@ endif
 
 ifdef TLS_FUNCS
 ifdef CONFIG_SMARTCARD
-ifndef CONFIG_NATIVE_WINDOWS
 ifneq ($(CONFIG_L2_PACKET), freebsd)
 LIBS += -ldl
-endif
 endif
 endif
 endif
@@ -1332,11 +1331,7 @@ endif
 
 ifdef CONFIG_CTRL_IFACE
 ifeq ($(CONFIG_CTRL_IFACE), y)
-ifdef CONFIG_NATIVE_WINDOWS
-CONFIG_CTRL_IFACE=named_pipe
-else
 CONFIG_CTRL_IFACE=unix
-endif
 endif
 CFLAGS += -DCONFIG_CTRL_IFACE
 ifeq ($(CONFIG_CTRL_IFACE), unix)
@@ -1426,16 +1421,6 @@ ifdef CONFIG_WPA_CLI_EDIT
 OBJS_c += ../src/utils/edit.o
 else
 OBJS_c += ../src/utils/edit_simple.o
-endif
-endif
-
-ifdef CONFIG_NATIVE_WINDOWS
-CFLAGS += -DCONFIG_NATIVE_WINDOWS
-LIBS += -lws2_32 -lgdi32 -lcrypt32
-LIBS_c += -lws2_32
-LIBS_p += -lws2_32 -lgdi32
-ifeq ($(CONFIG_CRYPTO), cryptoapi)
-LIBS_p += -lcrypt32
 endif
 endif
 
@@ -1595,7 +1580,11 @@ OBJS_t2 := $(OBJS) $(OBJS_l2) preauth_test.o
 OBJS_nfc := $(OBJS) $(OBJS_l2) nfc_pw_token.o
 OBJS_nfc += $(OBJS_d) ../src/drivers/drivers.o
 
+ifeq ($(CONFIG_OS), nuttx)
+OBJS += wpa_supplicant_main.o
+else
 OBJS += $(CONFIG_MAIN).o
+endif
 
 ifdef CONFIG_PRIVSEP
 OBJS_priv += $(OBJS_d) ../src/drivers/drivers.o
@@ -1823,6 +1812,8 @@ lcov-html: wpa_supplicant.gcda
 	lcov -c -d .. > lcov.info
 	genhtml lcov.info --output-directory lcov-html
 
+libwifi: $(OBJS)
+	$(AR) rcs ../libwifi.a $^
 clean:
 	$(MAKE) -C ../src clean
 	rm -f core *~ *.o *.d *.gcno *.gcda *.gcov
@@ -1833,5 +1824,11 @@ clean:
 	rm -rf lcov-html
 	rm -f libwpa_client.a
 	rm -f libwpa_client.so
+	@if [ -f ../libwifi.a ]; then \
+		rm -f ../libwifi.a; \
+	fi
+
+distclean: clean
+	rm -f .config
 
 -include $(OBJS:%.o=%.d)

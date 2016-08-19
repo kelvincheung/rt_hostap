@@ -21,7 +21,7 @@
 #include "init.h"
 
 
-int main(int argc, char *argv[])
+int hostapd_main(void)
 {
 	struct hapd_interfaces interfaces;
 	int ret = 1;

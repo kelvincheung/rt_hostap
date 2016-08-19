@@ -11,7 +11,7 @@
 #include "common.h"
 #include "wpa_supplicant_i.h"
 
-int main(int argc, char *argv[])
+int wpa_supplicant_main(void)
 {
 	struct wpa_interface iface;
 	int exitcode = 0;

@@ -427,42 +427,6 @@ int getopt(int argc, char *const argv[], const char *optstring)
 #endif /* CONFIG_ANSI_C_EXTRA */
 
 
-#ifdef CONFIG_NATIVE_WINDOWS
-/**
- * wpa_unicode2ascii_inplace - Convert unicode string into ASCII
- * @str: Pointer to string to convert
- *
- * This function converts a unicode string to ASCII using the same
- * buffer for output. If UNICODE is not set, the buffer is not
- * modified.
- */
-void wpa_unicode2ascii_inplace(TCHAR *str)
-{
-#ifdef UNICODE
-	char *dst = (char *) str;
-	while (*str)
-		*dst++ = (char) *str++;
-	*dst = '\0';
-#endif /* UNICODE */
-}
-
-
-TCHAR * wpa_strdup_tchar(const char *str)
-{
-#ifdef UNICODE
-	TCHAR *buf;
-	buf = os_malloc((strlen(str) + 1) * sizeof(TCHAR));
-	if (buf == NULL)
-		return NULL;
-	wsprintf(buf, L"%S", str);
-	return buf;
-#else /* UNICODE */
-	return os_strdup(str);
-#endif /* UNICODE */
-}
-#endif /* CONFIG_NATIVE_WINDOWS */
-
-
 void printf_encode(char *txt, size_t maxlen, const u8 *data, size_t len)
 {
 	char *end = txt + maxlen;

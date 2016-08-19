@@ -44,9 +44,7 @@ struct hapd_interfaces {
 	struct wpa_ctrl_dst *global_ctrl_dst;
 	char *global_iface_path;
 	char *global_iface_name;
-#ifndef CONFIG_NATIVE_WINDOWS
 	gid_t ctrl_iface_group;
-#endif /* CONFIG_NATIVE_WINDOWS */
 	struct hostapd_iface **iface;
 
 	size_t terminate_on_error;

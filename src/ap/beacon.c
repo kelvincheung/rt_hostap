@@ -10,7 +10,6 @@
 
 #include "utils/includes.h"
 
-#ifndef CONFIG_NATIVE_WINDOWS
 
 #include "utils/common.h"
 #include "common/ieee802_11_defs.h"
@@ -1249,5 +1248,3 @@ int ieee802_11_update_beacons(struct hostapd_iface *iface)
 
 	return ret;
 }
-
-#endif /* CONFIG_NATIVE_WINDOWS */

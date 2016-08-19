@@ -8,7 +8,6 @@
 
 #include "utils/includes.h"
 
-#ifndef CONFIG_NATIVE_WINDOWS
 
 #include "utils/common.h"
 #include "utils/eloop.h"
@@ -2839,6 +2838,3 @@ void ieee802_11_rx_from_unknown(struct hostapd_data *hapd, const u8 *src,
 			hapd, src,
 			WLAN_REASON_CLASS3_FRAME_FROM_NONASSOC_STA);
 }
-
-
-#endif /* CONFIG_NATIVE_WINDOWS */

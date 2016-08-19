@@ -2,10 +2,7 @@ ifndef CC
 CC=gcc
 endif
 
-ifndef CFLAGS
-CFLAGS = -MMD -O2 -Wall -g
-endif
-
+CFLAGS += -MMD -Os -Wall -g
 CFLAGS += $(EXTRA_CFLAGS)
 CFLAGS += -I$(abspath ../src)
 CFLAGS += -I$(abspath ../src/utils)
@@ -16,19 +13,19 @@ export BINDIR ?= /usr/local/bin/
 # directory if your C library does not include all header files.
 # CFLAGS += -DUSE_KERNEL_HEADERS -I/usr/src/linux/include
 
--include .config
-
 ifdef CONFIG_TESTING_OPTIONS
 CFLAGS += -DCONFIG_TESTING_OPTIONS
 CONFIG_WPS_TESTING=y
 endif
 
-ifndef CONFIG_OS
-ifdef CONFIG_NATIVE_WINDOWS
-CONFIG_OS=win32
-else
-CONFIG_OS=unix
+ifdef CONFIG_OS
+CONFIG_NAME=$(CONFIG_OS)_
 endif
+
+-include .config
+
+ifndef CONFIG_OS
+CONFIG_OS=unix
 endif
 
 ifeq ($(CONFIG_OS), internal)
@@ -39,12 +36,13 @@ ifeq ($(CONFIG_OS), none)
 CFLAGS += -DOS_NO_C_LIB_DEFINES
 endif
 
-ifdef CONFIG_NATIVE_WINDOWS
-CFLAGS += -DCONFIG_NATIVE_WINDOWS
-LIBS += -lws2_32
+ifeq ($(CONFIG_OS), nuttx)
+OBJS += hostapd_main.o
+else
+OBJS += main.o
 endif
 
-OBJS += main.o
+OBJS += init.o
 OBJS += config_none.o
 
 OBJS += ../src/ap/hostapd.o
@@ -124,7 +122,11 @@ OBJS_c += ../src/utils/common.o
 OBJS += ../src/utils/wpa_debug.o
 OBJS_c += ../src/utils/wpa_debug.o
 OBJS += ../src/utils/wpabuf.o
+ifeq ($(CONFIG_OS), nuttx)
+OBJS += ../src/utils/os_rtos.o
+else
 OBJS += ../src/utils/os_$(CONFIG_OS).o
+endif
 OBJS += ../src/utils/ip_addr.o
 
 OBJS += ../src/common/ieee802_11_common.o
@@ -133,6 +135,9 @@ OBJS += ../src/common/hw_features_common.o
 
 OBJS += ../src/eapol_auth/eapol_auth_sm.o
 
+ifeq ($(CONFIG_OS), nuttx)
+OBJS += ../src/utils/intf_yunos.o
+endif
 
 ifdef CONFIG_CODE_COVERAGE
 CFLAGS += -O0 -fprofile-arcs -ftest-coverage
@@ -941,7 +946,8 @@ endif
 #ALL=hostapd hostapd_cli
 ALL=hostapd
 
-all: verify_config $(ALL)
+#all: verify_config $(ALL)
+all: .config libwifi
 
 Q=@
 E=echo
@@ -963,6 +969,9 @@ else
 	$(Q)$(CC) -c -o $@ $(CFLAGS) $<
 	@$(E) "  CC " $<
 endif
+
+.config:
+	cp $(CONFIG_NAME)defconfig .config
 
 verify_config:
 	@if [ ! -r .config ]; then \
@@ -1039,11 +1048,20 @@ lcov-html:
 	lcov -c -d .. > lcov.info
 	genhtml lcov.info --output-directory lcov-html
 
+libwifi: $(OBJS)
+	$(AR) rcs ../libwifi.a $^
+
 clean:
 	$(MAKE) -C ../src clean
 	rm -f core *~ *.o hostapd hostapd_cli nt_password_hash hlr_auc_gw
 	rm -f *.d *.gcno *.gcda *.gcov
 	rm -f lcov.info
 	rm -rf lcov-html
+	@if [ -f ../libwifi.a ]; then \
+		rm -f ../libwifi.a; \
+	fi
+
+distclean: clean
+	rm -f .config
 
 -include $(OBJS:%.o=%.d)

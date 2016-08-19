@@ -1,15 +1,7 @@
-lw_hostap
+rt_hostap
 ==============
 
-Copyright (c) 2016, Kelvin Cheung <keguang.zhang@gmail.com> and contributors
-All Rights Reserved.
-
-
-
-WHAT IS THIS?
--------------
-
-lw_hostap is a full implementation of WPA/WPA2 and targeted for RTOS,
+rt_hostap is a full implementation of WPA/WPA2 and targeted for RTOS,
 which origins from hostap.
 
 

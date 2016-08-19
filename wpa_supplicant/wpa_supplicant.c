@@ -3352,13 +3352,6 @@ int wpa_supplicant_driver_init(struct wpa_supplicant *wpa_s)
 }
 
 
-static int wpa_supplicant_daemon(const char *pid_file)
-{
-	wpa_printf(MSG_DEBUG, "Daemonize..");
-	return os_daemonize(pid_file);
-}
-
-
 static struct wpa_supplicant *
 wpa_supplicant_alloc(struct wpa_supplicant *parent)
 {
@@ -4948,10 +4941,6 @@ int wpa_supplicant_run(struct wpa_global *global)
 {
 	struct wpa_supplicant *wpa_s;
 
-	if (global->params.daemonize &&
-	    wpa_supplicant_daemon(global->params.pid_file))
-		return -1;
-
 	if (global->params.wait_for_monitor) {
 		for (wpa_s = global->ifaces; wpa_s; wpa_s = wpa_s->next)
 			if (wpa_s->ctrl_iface)
@@ -5012,10 +5001,6 @@ void wpa_supplicant_deinit(struct wpa_global *global)
 
 	eloop_destroy();
 
-	if (global->params.pid_file) {
-		os_daemonize_terminate(global->params.pid_file);
-		os_free(global->params.pid_file);
-	}
 	os_free(global->params.ctrl_interface);
 	os_free(global->params.ctrl_interface_group);
 	os_free(global->params.override_driver);

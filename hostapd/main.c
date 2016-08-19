@@ -356,7 +356,7 @@ static int hostapd_global_init(struct hapd_interfaces *interfaces,
 }
 
 
-static void hostapd_global_deinit(const char *pid_file)
+static void hostapd_global_deinit(void)
 {
 	int i;
 
@@ -381,13 +381,10 @@ static void hostapd_global_deinit(const char *pid_file)
 #endif /* CONFIG_NATIVE_WINDOWS */
 
 	eap_server_unregister_methods();
-
-	os_daemonize_terminate(pid_file);
 }
 
 
-static int hostapd_global_run(struct hapd_interfaces *ifaces, int daemonize,
-			      const char *pid_file)
+static int hostapd_global_run(struct hapd_interfaces *ifaces)
 {
 #ifdef EAP_SERVER_TNC
 	int tnc = 0;
@@ -407,11 +404,6 @@ static int hostapd_global_run(struct hapd_interfaces *ifaces, int daemonize,
 		return -1;
 	}
 #endif /* EAP_SERVER_TNC */
-
-	if (daemonize && os_daemonize(pid_file)) {
-		wpa_printf(MSG_ERROR, "daemon: %s", strerror(errno));
-		return -1;
-	}
 
 	eloop_run();
 
@@ -561,8 +553,7 @@ int main(int argc, char *argv[])
 	struct hapd_interfaces interfaces;
 	int ret = 1;
 	size_t i, j;
-	int c, debug = 0, daemonize = 0;
-	char *pid_file = NULL;
+	int c, debug = 0;
 	const char *log_file = NULL;
 	const char *entropy_file = NULL;
 	char **bss_config = NULL, **tmp_bss;
@@ -599,9 +590,6 @@ int main(int argc, char *argv[])
 			if (wpa_debug_level > 0)
 				wpa_debug_level--;
 			break;
-		case 'B':
-			daemonize++;
-			break;
 		case 'e':
 			entropy_file = optarg;
 			break;
@@ -610,10 +598,6 @@ int main(int argc, char *argv[])
 			break;
 		case 'K':
 			wpa_debug_show_keys++;
-			break;
-		case 'P':
-			os_free(pid_file);
-			pid_file = os_rel2abs_path(optarg);
 			break;
 		case 't':
 			wpa_debug_timestamp++;
@@ -767,7 +751,7 @@ int main(int argc, char *argv[])
 
 	hostapd_global_ctrl_iface_init(&interfaces);
 
-	if (hostapd_global_run(&interfaces, daemonize, pid_file)) {
+	if (hostapd_global_run(&interfaces)) {
 		wpa_printf(MSG_ERROR, "Failed to start eloop");
 		goto out;
 	}
@@ -788,8 +772,7 @@ int main(int argc, char *argv[])
 	os_free(interfaces.iface);
 
 	eloop_cancel_timeout(hostapd_periodic, &interfaces, NULL);
-	hostapd_global_deinit(pid_file);
-	os_free(pid_file);
+	hostapd_global_deinit();
 
 	if (log_file)
 		wpa_debug_close_file();

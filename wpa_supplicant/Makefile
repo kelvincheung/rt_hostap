@@ -111,6 +111,8 @@ endif
 
 ifeq ($(CONFIG_OS), nuttx)
 OBJS += ../src/utils/os_rtos.o
+else ifeq ($(CONFIG_OS),sx)
+OBJS += ../src/utils/os_rtos.o
 else
 OBJS += ../src/utils/os_$(CONFIG_OS).o
 endif
@@ -1581,6 +1583,8 @@ OBJS_nfc := $(OBJS) $(OBJS_l2) nfc_pw_token.o
 OBJS_nfc += $(OBJS_d) ../src/drivers/drivers.o
 
 ifeq ($(CONFIG_OS), nuttx)
+OBJS += wpa_supplicant_main.o
+else ifeq ($(CONFIG_OS),sx)
 OBJS += wpa_supplicant_main.o
 else
 OBJS += $(CONFIG_MAIN).o

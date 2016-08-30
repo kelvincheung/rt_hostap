@@ -1,7 +1,11 @@
+ifdef CONFIG_OS
 ifeq ($(CONFIG_OS),nuttx)
 -include $(TOPDIR)/.config
 CFLAGS += -I$(TOPDIR)/include
 CFLAGS += -I$(TOPDIR)/hardware/id.bsp/include
+else ifeq ($(CONFIG_OS),sx)
+CFLAGS +=  -D__SX__
+endif
 export CFLAGS CONFIG_OS
 endif
 
@@ -14,6 +18,9 @@ ifeq ($(CONFIG_WIFI_AP),y)
 	$(Q) $(MAKE) -C hostapd
 endif
 	$(Q) cp -r libwifi.a $(TOPDIR)/lib/
+else ifeq ($(CONFIG_OS),sx)
+	$(Q) $(MAKE) -C wpa_supplicant
+	$(Q) $(MAKE) -C hostapd
 else
 	$(Q) $(MAKE) -C wpa_supplicant clean
 	$(Q) $(MAKE) -C wpa_supplicant wpa_supplicant

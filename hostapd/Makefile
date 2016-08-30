@@ -38,6 +38,8 @@ endif
 
 ifeq ($(CONFIG_OS), nuttx)
 OBJS += hostapd_main.o
+else ifeq ($(CONFIG_OS),sx)
+OBJS += hostapd_main.o
 else
 OBJS += main.o
 endif
@@ -123,6 +125,8 @@ OBJS += ../src/utils/wpa_debug.o
 OBJS_c += ../src/utils/wpa_debug.o
 OBJS += ../src/utils/wpabuf.o
 ifeq ($(CONFIG_OS), nuttx)
+OBJS += ../src/utils/os_rtos.o
+else ifeq ($(CONFIG_OS),sx)
 OBJS += ../src/utils/os_rtos.o
 else
 OBJS += ../src/utils/os_$(CONFIG_OS).o

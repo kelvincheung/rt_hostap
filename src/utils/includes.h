@@ -35,6 +35,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
+#include <time.h>
 #ifndef _WIN32_WCE
 #include <signal.h>
 #include <sys/types.h>

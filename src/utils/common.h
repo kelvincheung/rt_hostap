@@ -73,8 +73,16 @@ static inline unsigned int bswap_32(unsigned int v)
 
 #ifdef __SX__
 #define __BYTE_ORDER __LITTLE_ENDIAN
-#define bswap_16 SWAP16
-#define bswap_32 SWAP32
+static inline unsigned short bswap_16(unsigned short v)
+{
+	return ((v & 0xff) << 8) | (v >> 8);
+}
+
+static inline unsigned int bswap_32(unsigned int v)
+{
+	return ((v & 0xff) << 24) | ((v & 0xff00) << 8) |
+		((v & 0xff0000) >> 8) | (v >> 24);
+}
 #endif /* __SX__ */
 
 #ifdef _MSC_VER

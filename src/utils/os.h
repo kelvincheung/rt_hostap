@@ -251,7 +251,7 @@ int os_file_exists(const char *fname);
  * @stream: the stream to be flushed
  * Returns: 0 if the operation succeeded or -1 on failure
  */
-int os_fdatasync(FILE *stream);
+/*int os_fdatasync(FILE *stream);*/
 
 /**
  * os_zalloc - Allocate and zero memory

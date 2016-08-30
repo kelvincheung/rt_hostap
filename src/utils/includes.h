@@ -16,6 +16,11 @@
 /* Include possible build time configuration before including anything else */
 #include "build_config.h"
 
+#ifdef __SX__
+#include <cs_types.h>
+/*#include <tcpip_sockets.h>*/
+#else
+
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -40,4 +45,5 @@
 #include <sys/time.h>
 #endif /* __vxworks */
 
+#endif /* __SX__ */
 #endif /* INCLUDES_H */

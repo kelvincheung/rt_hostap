@@ -53,6 +53,28 @@ static inline unsigned int bswap_32(unsigned int v)
 }
 #endif /* __APPLE__ */
 
+#if defined(__cskyLE__) || defined(__cskyBE__)
+#ifdef __cskyLE__
+#define __BYTE_ORDER __LITTLE_ENDIAN
+#else
+#define __BYTE_ORDER __BIG_ENDIAN
+#endif /* __cskyLE__ */
+static inline unsigned short bswap_16(unsigned short v)
+{
+	return ((v & 0xff) << 8) | (v >> 8);
+}
+
+static inline unsigned int bswap_32(unsigned int v)
+{
+	return ((v & 0xff) << 24) | ((v & 0xff00) << 8) |
+		((v & 0xff0000) >> 8) | (v >> 24);
+}
+#endif /* defined(__cskyLE__) || defined(__cskyBE__) */
+
+#ifdef __SX__
+#define __BYTE_ORDER __LITTLE_ENDIAN
+#endif /* __SX__ */
+
 #ifdef _MSC_VER
 #define inline __inline
 
@@ -88,6 +110,10 @@ typedef INT16 s16;
 typedef INT8 s8;
 #define WPA_TYPES_DEFINED
 #endif /* __vxworks */
+
+#ifdef __SX__
+#define WPA_TYPES_DEFINED
+#endif /* __SX__ */
 
 #ifndef WPA_TYPES_DEFINED
 #ifdef CONFIG_USE_INTTYPES_H

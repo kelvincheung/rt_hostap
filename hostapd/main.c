@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 
 	wpa_msg_register_ifname_cb(hostapd_msg_ifname_cb);
 
-	wpa_debug_setup_stdout();
+	/*wpa_debug_setup_stdout();*/
 
 	interfaces.count = argc - optind;
 	if (interfaces.count || num_bss_configs) {

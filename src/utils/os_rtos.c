@@ -18,7 +18,6 @@
  */
 
 #include "includes.h"
-#include <time.h>
 
 #include "os.h"
 #include "common.h"

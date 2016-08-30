@@ -22,8 +22,10 @@
 #include "stdio.h"
 #include "stdarg.h"
 #include "string.h"
+#include "ctype.h"
 #include "cs_types.h"
 #include "cos.h"
+#include "tm.h"
 #include "tcpip_inet.h"
 #include "tcpip_sockets.h"
 #else

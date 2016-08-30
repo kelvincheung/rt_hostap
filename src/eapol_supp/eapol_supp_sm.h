@@ -332,7 +332,7 @@ int eapol_sm_get_eap_proxy_imsi(struct eapol_sm *sm, char *imsi, size_t *len);
 #else /* IEEE8021X_EAPOL */
 static inline struct eapol_sm *eapol_sm_init(struct eapol_ctx *ctx)
 {
-	free(ctx);
+	os_free(ctx);
 	return (struct eapol_sm *) 1;
 }
 static inline void eapol_sm_deinit(struct eapol_sm *sm)

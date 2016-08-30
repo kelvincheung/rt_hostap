@@ -44,9 +44,9 @@ int hostapd_main(void)
 
 	wpa_msg_register_ifname_cb(hostapd_msg_ifname_cb);
 
-	wpa_debug_setup_stdout();
+	/*wpa_debug_setup_stdout();*/
 
-	interfaces.count = argc - optind;
+	/*interfaces.count = argc - optind;*/
 	if (interfaces.count || num_bss_configs) {
 		interfaces.iface = os_calloc(interfaces.count + num_bss_configs,
 					     sizeof(struct hostapd_iface *));
@@ -63,9 +63,9 @@ int hostapd_main(void)
 
 	/* Allocate and parse configuration for full interface files */
 	for (i = 0; i < interfaces.count; i++) {
-		interfaces.iface[i] = hostapd_interface_init(&interfaces,
+		/*interfaces.iface[i] = hostapd_interface_init(&interfaces,
 							     argv[optind + i],
-							     debug);
+							     debug);*/
 		if (!interfaces.iface[i]) {
 			wpa_printf(MSG_ERROR, "Failed to initialize interface");
 			goto out;

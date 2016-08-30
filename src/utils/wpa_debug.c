@@ -575,12 +575,12 @@ void wpa_debug_close_file(void)
 }
 
 
-void wpa_debug_setup_stdout(void)
+/*void wpa_debug_setup_stdout(void)
 {
 #ifndef _WIN32
 	setvbuf(stdout, NULL, _IOLBF, 0);
-#endif /* _WIN32 */
-}
+#endif [> _WIN32 <]
+}*/
 
 #endif /* CONFIG_NO_STDOUT_DEBUG */
 
@@ -842,6 +842,7 @@ const char * debug_level_str(int level)
 }
 
 
+#ifdef CONFIG_CTRL_IFACE
 int str_to_debug_level(const char *s)
 {
 	if (os_strcasecmp(s, "EXCESSIVE") == 0)
@@ -858,3 +859,4 @@ int str_to_debug_level(const char *s)
 		return MSG_ERROR;
 	return -1;
 }
+#endif /* CONFIG_CTRL_IFACE */

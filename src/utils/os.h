@@ -490,6 +490,19 @@ char * os_strdup(const char *s);
 #ifndef os_free
 #define os_free(p) COS_Free((p))
 #endif
+#ifndef os_strcasecmp
+#define os_strcasecmp(s1, s2) os_strcmp((s1), (s2))
+#endif
+#define calloc(n, s) COS_Calloc((n), (s))
+#define sleep(s) COS_Sleep((s * 1000))
+#define usleep(us) COS_Sleep((us / 1000))
+#define abort() do { } while (0)
+#ifndef ENOTSUP
+#define ENOTSUP		EOPNOTSUPP
+#endif
+#ifndef ECANCELED
+#define ECANCELED	125
+#endif
 #ifndef INET_ADDRSTRLEN
 #define INET_ADDRSTRLEN 16
 #endif

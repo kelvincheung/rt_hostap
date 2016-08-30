@@ -205,6 +205,7 @@ int hostapd_mac_comp_empty(const void *a)
 }
 
 
+#ifdef CONFIG_BACKEND_FILE
 static int hostapd_config_read_wpa_psk(const char *fname,
 				       struct hostapd_ssid *ssid)
 {
@@ -292,6 +293,7 @@ static int hostapd_config_read_wpa_psk(const char *fname,
 
 	return ret;
 }
+#endif /* CONFIG_BACKEND_FILE */
 
 
 static int hostapd_derive_psk(struct hostapd_ssid *ssid)
@@ -332,11 +334,13 @@ int hostapd_setup_wpa_psk(struct hostapd_bss_config *conf)
 		ssid->wpa_psk->group = 1;
 	}
 
+#ifdef CONFIG_BACKEND_FILE
 	if (ssid->wpa_psk_file) {
 		if (hostapd_config_read_wpa_psk(ssid->wpa_psk_file,
 						&conf->ssid))
 			return -1;
 	}
+#endif /* CONFIG_BACKEND_FILE */
 
 	return 0;
 }

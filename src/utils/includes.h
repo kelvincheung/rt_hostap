@@ -17,8 +17,15 @@
 #include "build_config.h"
 
 #ifdef __SX__
-#include <cs_types.h>
-/*#include <tcpip_sockets.h>*/
+#include "stdlib.h"
+#include "stddef.h"
+#include "stdio.h"
+#include "stdarg.h"
+#include "string.h"
+#include "cs_types.h"
+#include "cos.h"
+#include "tcpip_inet.h"
+#include "tcpip_sockets.h"
 #else
 
 #include <stdlib.h>

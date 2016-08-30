@@ -480,6 +480,20 @@ void * os_malloc(size_t size);
 void * os_realloc(void *ptr, size_t size);
 void os_free(void *ptr);
 char * os_strdup(const char *s);
+#elif __SX__
+#ifndef os_malloc
+#define os_malloc(s) COS_Malloc((s))
+#endif
+#ifndef os_realloc
+#define os_realloc(p, s) COS_Realloc((p), (s))
+#endif
+#ifndef os_free
+#define os_free(p) COS_Free((p))
+#endif
+#ifndef INET_ADDRSTRLEN
+#define INET_ADDRSTRLEN 16
+#endif
+
 #else /* WPA_TRACE */
 #ifndef os_malloc
 #define os_malloc(s) malloc((s))
@@ -553,8 +567,22 @@ char * os_strdup(const char *s);
 #endif
 #endif
 
-#endif /* OS_NO_C_LIB_DEFINES */
+#ifndef os_strdup
+char * os_strdup(const char *s)
+{
+	char *res;
+	size_t len;
+	if (s == NULL)
+		return NULL;
+	len = os_strlen(s);
+	res = os_malloc(len + 1);
+	if (res)
+		os_memcpy(res, s, len + 1);
+	return res;
+}
+#endif
 
+#endif /* OS_NO_C_LIB_DEFINES */
 
 static inline int os_snprintf_error(size_t size, int res)
 {
